@@ -1,17 +1,17 @@
 import sys
 
+# create memory, 100 pages of 100 words each, 10,000 words total
+pages, words = 100, 100
+
+mem = [[0] * words for _ in range(pages)]
+
+# Create registers
+acc = 0 # accumulator
+ic = 0 # instruction counter
+ir = 0 # instruction register
+idx = 0 # index register
+
 def main():
-    
-    # create memory, 100 pages of 100 words each, 10,000 words total
-    pages, words = 100, 100
-
-    mem = [[0] * words for _ in range(pages)]
-
-    # Create registers
-    acc = 0 # accumulator
-    ic = 0 # instruction counter
-    ir = 0 # instruction register
-    idx = 0 # index register
 
     # Introduction
     print("*** Welcome to Simpletron V2! ***")
