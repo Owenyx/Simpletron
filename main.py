@@ -1,4 +1,5 @@
 import sys
+import machine
 
 # create memory, 100 pages of 100 words each, 10,000 words total
 pages, words = 100, 100
@@ -12,6 +13,7 @@ ir = 0 # instruction register
 idx = 0 # index register
 
 def main():
+    core_dump(00,00)
 
     # Introduction
     print("*** Welcome to Simpletron V2! ***")

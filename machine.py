@@ -1,5 +1,7 @@
 # Contains functions for Simpletron other than instructions
 
+import main
+
 def core_dump(start, end): # Param are start and end of the range of pages to print
 
     global mem
@@ -26,8 +28,11 @@ def core_dump(start, end): # Param are start and end of the range of pages to pr
         # Dump memory one page at a time
         print("\nMEMORY\n   ")
         for i in range(10):
-            print(f"{i:6d} ") # print top ones index for page
+            print(f"{i:6d} ") # print ones index on top for page
 
-
-        for word in page:
-            print(word)
+        # Dump the words of the page
+        for line in range(10):
+            print(f"{(line*10):2d}") # Print the tens index
+            # Dump the words on this line
+            for i in range(10):
+                print(f" {page[line * i]:6d}")
