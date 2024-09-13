@@ -41,3 +41,6 @@ def core_dump(start, end): # Param are start and end of the range of pages to pr
             print()
         print("\n")
     return
+
+def manual_data_entry():
+    

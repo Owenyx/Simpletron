@@ -13,7 +13,6 @@ ir = 0 # instruction register
 idx = 0 # index register
 
 def main():
-    machine.core_dump(0,2)
 
     # Introduction
     print("*** Welcome to Simpletron V2! ***")
@@ -30,19 +29,19 @@ def main():
     if ans == 1:
         print("*** I will type the location number and a question mark (?). ***")
         print("*** You then type the word for that location. Type the word GO to execute your program ***")
-        #manual_data_entry()
-    #else:
-        #file_name = input("*** Enter the name of the file: ")
-        #file_data_entry(file_name)
+        machine.manual_data_entry()
+    else:
+        file_name = input("*** Enter the name of the file: ")
+        machine.file_data_entry(file_name)
 
     # Begin executing the users program
-    #while True:
-        #load_ir() # loads the instruction from the address of the itc into the irg
-        #itc += 1
-        #exit_code = #execute_ir() # exit code is 1 to quit, 0 to continue
+    while True:
+        machine.load_ir() # loads the instruction from the address of the itc into the irg
+        ic += 1
+        exit_code = machine.execute_ir() # exit code is 1 to quit, 0 to continue
 
-        #if exit_code:
-            #end_execution()
+        if exit_code:
+            machine.end_execution()
         
 if __name__ == "__main__":
     main()
