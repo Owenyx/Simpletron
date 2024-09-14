@@ -14,34 +14,38 @@ idx = 0 # index register
 
 def main():
 
+    global mem
+    global acc
+    global ic
+    global ir
+    global idx
+
     # Introduction
     print("*** Welcome to Simpletron V2! ***")
-    print("*** Enter 1 if you would like to enter your program one instruction( or data word ) at a time ***")
-    print("*** Enter 2 if you would rather enter a file with the instructions and data ***")
-
     # Input decision
-    ans = int(input("*** Your answer: "))
-    while ans != 1 and ans != 2:
+    ans = input("*** Do you have a file that contains your SML program (Y/N) ? ").upper()
+    while ans != 'Y' and ans != 'N':
         print("Invalid input.")
-        ans = int(input("*** Your answer: "))
+        ans = input("*** Do you have a file that contains your SML program (Y/N) ? ").upper()
 
     # Program and data entry
-    if ans == 1:
-        print("*** I will type the location number and a question mark (?). ***")
-        print("*** You then type the word for that location. Type the word GO to execute your program ***")
+    if ans == 'N':
         machine.manual_data_entry()
     else:
         file_name = input("*** Enter the name of the file: ")
-        machine.file_data_entry(file_name)
+        exit_code = machine.file_data_entry(file_name)
+        if exit_code == 1:
+            machine.end_execution()
 
     # Begin executing the users program
     while True:
-        machine.load_ir() # loads the instruction from the address of the itc into the irg
+        ir = mem[ic] # load the instruction from the address of the ic into the ir
         ic += 1
         exit_code = machine.execute_ir() # exit code is 1 to quit, 0 to continue
 
-        if exit_code:
-            machine.end_execution()
+        if exit_code == 1:
+            break
+    return 0
         
 if __name__ == "__main__":
     main()
