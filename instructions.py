@@ -1,164 +1,129 @@
-import main
+
+import re
 import machine
 
 def READ(op):
-    global mem
     page, word = address_split(op)
-    main.mem[page][word] = int(input("? ")) #add input check???
+    inp = input("? ")
+    
+    # check input validity
+    while not re.match(r"^-?\d(\d?){5}$", inp): # if input is not as 6 or fewer digit integer, terminate with an error
+        print("Invalid entry, try again")
+        inp = input(f"{op} ? ")
+
+    machine.mem[page][word] = inp
     return 0
 
 def WRITE(op):
-    global mem
     page, word = address_split(op)
-    print(main.mem[page][word])
+    print(machine.mem[page][word])
     return 0
 
 def LOAD(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.acc = main.mem[page][word]
+    machine.acc = int(machine.mem[page][word])
     return 0
 
 def LOADIM(op):
-    global acc
-    main.acc = op
+    machine.acc = int(op)
     return 0
 
 def LOADX(op):
-    global mem
-    global idx
     page, word = address_split(op)
-    main.idx = main.mem[page][word]
+    machine.idx = int(machine.mem[page][word])
     return 0
 
 def LOADIDX(op):
-    global mem
-    global idx
-    page, word = address_split(idx)
-    main.acc = main.mem[page][word]
+    page, word = address_split(machine.idx)
+    machine.acc = int(machine.mem[page][word])
     return 0
 
 def STORE(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.mem[page][word] = main.acc
+    machine.mem[page][word] = str(machine.acc)
     return 0
 
 def STOREIDX(op):
-    global mem
-    global idx
-    page, word = address_split(idx)
-    main.mem[page][word] = main.acc
+    page, word = address_split(machine.idx)
+    machine.mem[page][word] = str(machine.acc)
     return 0
 
 def ADD(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.acc += main.mem[page][word]
+    machine.acc += int(machine.mem[page][word])
     return 0
 
 def ADDX(op):
-    global mem
-    global acc
-    global idx
-    page, word = address_split(idx)
-    main.acc += mem[page][word]
+    page, word = address_split(machine.idx)
+    machine.acc += int(machine.mem[page][word])
     return 0
 
 def SUBTRACT(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.acc -= main.mem[page][word]
+    machine.acc -= int(machine.mem[page][word])
     return 0
 
 def SUBTRACTX(op):
-    global mem
-    global acc
-    global idx
-    page, word = address_split(idx)
-    main.acc -= mem[page][word]
+    page, word = address_split(machine.idx)
+    machine.acc -= int(machine.mem[page][word])
     return 0
 
 def DIVIDE(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.acc //= main.mem[page][word]
+    machine.acc //= int(machine.mem[page][word])
     return 0
 
 def DIVIDEX(op):
-    global mem
-    global acc
-    global idx
-    page, word = address_split(idx)
-    main.acc //= mem[page][word]
+    page, word = address_split(machine.idx)
+    machine.acc //= int(machine.mem[page][word])
     return 0
 
 def MULTIPLY(op):
-    global mem
-    global acc
     page, word = address_split(op)
-    main.acc *= main.mem[page][word]
+    machine.acc *= int(machine.mem[page][word])
     return 0
 
 def MULTIPLYX(op):
-    global mem
-    global acc
-    global idx
-    page, word = address_split(idx)
-    main.acc *= mem[page][word]
+    page, word = address_split(machine.idx)
+    machine.acc *= int(machine.mem[page][word])
     return 0
 
 def INC(op):
-    global idx
-    main.idx += 1
+    machine.idx += 1
     return 0
 
-def DEC(op):
-    global idx
-    main.idx -= 1
+def DEC(op): 
+    machine.idx -= 1
     return 0
 
 def BRANCH(op):
-    global ic
-    main.ic = op 
+    machine.ic = int(op) 
     return 0
 
 def BRANCHNEG(op):
-    global acc
-    if main.acc >= 0:
+    if machine.acc >= 0:
         return 0 # Do nothing if positive
     #else branch
-    global ic
-    main.ic = op 
+    machine.ic = int(op) 
     return 0
 
 def BRANCHZERO(op):
-    global acc
-    if main.acc != 0:
+    if machine.acc != 0:
         return 0 # Do nothing if not zero
     #else branch
-    global ic
-    main.ic = op 
+    machine.ic = int(op)
     return 0
 
 def SWAP(op):
-    global acc
-    global idx
-    main.acc, main.idx = main.idx, main.acc
+    machine.acc, machine.idx = machine.idx, machine.acc
     return 0
 
 def HALT(op):
     start, end = address_split(op)
     machine.dump_core(start, end)
-    machine.end_execution()
     return 1
 
 # Not an instruction, just helpful within them
-# Takes a memory address and returns the page index, word index
+# Takes a memory address and returns the page index, word index as ints
 def address_split(address):
-    return int(str(address)[0:2]), int(str(address)[2:4])
+    return int(str(address).zfill(4)[0:2]), int(str(address).zfill(4)[2:4])

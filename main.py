@@ -1,24 +1,7 @@
 import sys
 import machine
 
-# create memory, 100 pages of 100 words each, 10,000 words total
-pages, words = 100, 100
-
-mem = [[0] * words for _ in range(pages)]
-
-# Create registers
-acc = 0 # accumulator
-ic = 0 # instruction counter
-ir = 0 # instruction register
-idx = 0 # index register
-
 def main():
-
-    global mem
-    global acc
-    global ic
-    global ir
-    global idx
 
     # Introduction
     print("*** Welcome to Simpletron V2! ***")
@@ -35,12 +18,14 @@ def main():
         file_name = input("*** Enter the name of the file: ")
         exit_code = machine.file_data_entry(file_name)
         if exit_code == 1:
-            machine.end_execution()
+            return 0
 
     # Begin executing the users program
     while True:
-        ir = mem[ic] # load the instruction from the address of the ic into the ir
-        ic += 1
+        page = int(str(machine.ic).zfill(4)[0:2])
+        word = int(str(machine.ic).zfill(4)[2:4])
+        machine.ir = machine.mem[page][word] # load the instruction from the address of the ic into the ir
+        machine.ic += 1
         exit_code = machine.execute_ir() # exit code is 1 to quit, 0 to continue
 
         if exit_code == 1:
