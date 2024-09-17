@@ -106,14 +106,15 @@ def manual_data_entry():
                     return 0
                 
                 # If entry is an instruction with a negative operand, it's valid
-                if re.match(r"^\d\d-\d(\d?){3}$, entry"): break
+                if re.match(r"^\d\d-\d(\d?){3}$", entry): break
                 
                 # Check valid input - must be a 6 digit number or fewer
                 if not re.match(r"^-?\d+$", entry): # If entry isn't an integer value, try again
                     print("Input must be a number or \"GO\"")
                     continue
-
-                if not re.fullmatch(r"^-?\d(\d?){5}$"):
+                
+                # ensures input is 6 or fewer digits
+                if not re.fullmatch(r"^-?\d(\d?){5}$", entry):
                     print("Entry must be 6 digits or fewer")
                     continue
 
@@ -180,4 +181,8 @@ def execute_ir():
         return 1 # Invalid operation code
 
     exit_code = instr[op_code](operand)
+    # if a string is returned, then an error has occured
+    if isinstance(exit_code, str):
+        print(exit_code)
+        return 1 # signifies error in order to terminate
     return exit_code

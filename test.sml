@@ -1,0 +1,1 @@
+; test all errors and syntax
