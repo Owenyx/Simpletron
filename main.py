@@ -22,13 +22,14 @@ def main():
 
     # Begin executing the users program
     while True:
-        page = int(str(machine.ic).zfill(4)[0:2])
-        word = int(str(machine.ic).zfill(4)[2:4])
-        machine.ir = machine.mem[page][word] # load the instruction from the address of the ic into the ir
+        machine.ir = machine.mem[machine.ic] # load the instruction from the address of the ic into the ir
         machine.ic += 1
         exit_code = machine.execute_ir() # exit code is 1 to quit, 0 to continue
 
-        if exit_code == 1:
+        if exit_code == 1: # program halted
+            break
+        if exit_code == 2: # program encountered an error
+            machine.dump_core(00,10) # dump first 10 pages
             break
     return 0
         

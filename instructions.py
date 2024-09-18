@@ -20,113 +20,89 @@ def READ(op):
         print("Invalid entry, try again")
         inp = input(f"{op} ? ")
 
-    machine.mem[page][word] = inp
+    machine.mem[op] = int(inp)
     return 0
 
 def WRITE(op):
     if op<0: return "Error: Out of memory bounds" 
-
-    print(machine.mem[page][word])
+    print(machine.mem[op])
     return 0
 
 def LOAD(op):
     if op<0: return "Error: Out of memory bounds" 
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
-
-    machine.acc = int(machine.mem[page][word])
+    machine.acc = machine.mem[op]
     return 0
 
 def LOADIM(op):
-    machine.acc = int(op)
+    machine.acc = op
     return 0
 
 def LOADX(op):
     if op<0: return "Error: Out of memory bounds" 
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
-
-    machine.idx = int(machine.mem[page][word])
+    machine.idx = machine.mem[op]
     return 0
 
 def LOADIDX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    if neg_operand_at(machine.idx): return "Error: Data at memory location must be an integer value"
-    page, word = address_split(machine.idx)
-    machine.acc = int(machine.mem[page][word])
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
+    machine.acc = machine.mem[machine.idx]
     return 0
 
 def STORE(op):
-    if op<0: return "Error: Out of memory bounds" 
-
-    machine.mem[page][word] = str(machine.acc)
+    if op<0: return "Error: Out of memory bounds"
+    machine.mem[op] = machine.acc
     return 0
 
 def STOREIDX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    page, word = address_split(machine.idx)
-    machine.mem[page][word] = str(machine.acc)
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
+    machine.mem[machine.idx] = machine.acc
     return 0
 
 def ADD(op):
     if op<0: return "Error: Out of memory bounds" 
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
     if acc_overflow(op): return "Error: Accumulator overflow"
-
-    machine.acc += int(machine.mem[page][word])
+    machine.acc += machine.mem[op]
     return 0
 
 def ADDX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    if neg_operand_at(machine.idx): return "Error: Data at memory location must be an integer value"
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
     if acc_overflow(machine.idx): return "Error: Accumulator overflow"
-    page, word = address_split(machine.idx)
-    machine.acc += int(machine.mem[page][word])
+    machine.acc += machine.mem[machine.idx]
     return 0
 
 def SUBTRACT(op):
     if op<0: return "Error: Out of memory bounds" 
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
     if acc_overflow(op): return "Error: Accumulator overflow"
-
-    machine.acc -= int(machine.mem[page][word])
+    machine.acc -= machine.mem[op]
     return 0
 
 def SUBTRACTX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    if neg_operand_at(machine.idx): return "Error: Data at memory location must be an integer value"
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
     if acc_overflow(machine.idx): return "Error: Accumulator overflow"
-    page, word = address_split(machine.idx)
-    machine.acc -= int(machine.mem[page][word])
+    machine.acc -= machine.mem[machine.idx]
     return 0
 
 def DIVIDE(op):
     if op<0: return "Error: Out of memory bounds" 
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
-
-    if int(machine.mem[page][word]) == 0: return "Error: Divide by zero"
-    machine.acc //= int(machine.mem[page][word])
+    if machine.mem[op] == 0: return "Error: Divide by zero"
+    machine.acc //= machine.mem[op]
     return 0
 
 def DIVIDEX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    page, word = address_split(machine.idx)
-    if int(machine.mem[page][word]) == 0: return "Error: Divide by zero"
-    machine.acc //= int(machine.mem[page][word])
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
+    if machine.mem[machine.idx] == 0: return "Error: Divide by zero"
+    machine.acc //= machine.mem[machine.idx]
     return 0
 
 def MULTIPLY(op):
     if acc_overflow(op): return "Error: Accumulator overflow"
-    if neg_operand_at(op): return "Error: Data at memory location must be an integer value"
     if op<0: return "Error: Out of memory bounds" 
-
-    machine.acc *= int(machine.mem[page][word])
+    machine.acc *= machine.mem[op]
     return 0
 
 def MULTIPLYX(op):
-    if machine.idx < 0: return "Error: Out of memory bounds" 
-    if neg_operand_at(machine.idx): return "Error: Data at memory location must be an integer value"
+    if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
     if acc_overflow(machine.idx): return "Error: Accumulator overflow"
-    page, word = address_split(machine.idx)
-    machine.acc *= int(machine.mem[page][word])
+    machine.acc *= machine.mem[machine.idx]
     return 0
 
 def INC(op):
@@ -141,7 +117,7 @@ def DEC(op):
 
 def BRANCH(op):
     if op<0: return "Error: Out of memory bounds" 
-    machine.ic = int(op) 
+    machine.ic = op
     return 0
 
 def BRANCHNEG(op):
@@ -149,7 +125,7 @@ def BRANCHNEG(op):
     if machine.acc >= 0:
         return 0 # Do nothing if positive
     #else branch
-    machine.ic = int(op) 
+    machine.ic = op
     return 0
 
 def BRANCHZERO(op):
@@ -157,7 +133,7 @@ def BRANCHZERO(op):
     if machine.acc != 0:
         return 0 # Do nothing if not zero
     #else branch
-    machine.ic = int(op)
+    machine.ic = op
     return 0
 
 def SWAP(op):
@@ -166,21 +142,15 @@ def SWAP(op):
 
 def HALT(op):
     if op<0: return "Error: Out of memory bounds" 
-    start = op/100
+    # Divide address into starting page index and ending page index
+    start = op//100
     end = op%100
     machine.dump_core(start, end)
     return 1
 
 # Checks if the accumulator goes over the limit of 999,999 or under the limit of -999,999
 def acc_overflow(address):
-    sum = int(machine.mem[address]) + machine.acc 
+    sum = machine.mem[address] + machine.acc 
     if sum > 999999 or sum < -999999:
-        return True
-    return False
-
-# Returns whether data in memory is an istruction with a negative operand
-def neg_operand_at(address): 
-    if len(machine.mem[address]) < 4: return False # an instruction with a nagative operand must have 2 digits before and 1 after the neagtive sign
-    if machine.mem[page][word][2] == '-':
         return True
     return False

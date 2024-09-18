@@ -52,8 +52,12 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
     global ir
     global idx
 
-    opcode = abs(ir/10000) # Set the operation code to the left 2 digits of the instruction register
-    opr = ir%10000 # set the operand to the right 4 digits of the instruction register
+    # since instructions may have no operand, it could be less than 6 digits, 
+    # so for instruction execution we fill the op code and operand with zeroes on the right
+    padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
+
+    op_code = abs(padded//10000) # op code is first 2 digits
+    operand = padded%10000 # operand is the other 4
 
     # Dump registers and page data for each page within the range
     for page_num in range(start, end+1):
@@ -65,8 +69,8 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
         print(f"Accumulator        {acc:0{7 if acc < 0 else 6}d}") # format is to sure length of output is 6 even when number is negative
         print(f"InstructionCounter {ic:0{7 if acc < 0 else 6}d}")
         print(f"IndexRegister      {idx:0{7 if acc < 0 else 6}d}")
-        print(f"OperationCode          {opcode:0{3 if acc < 0 else 2}d}")
-        print(f"Operand              {opr:0{5 if acc < 0 else 4}d}")
+        print(f"OperationCode          {op_code:0{3 if acc < 0 else 2}d}")
+        print(f"Operand              {operand:0{5 if acc < 0 else 4}d}")
 
         # Dump memory one page at a time
         print("\nMEMORY",end="\n\n   ")
@@ -90,15 +94,17 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
 def manual_data_entry():
 
     global mem
+    global pages
+    global words
 
     print("*** Please enter your program one instruction (or data word) at a time                 ***")
     print("*** I will type the location number and a question mark (?).                           ***")
     print("*** You then type the word for that location. Type the word GO to execute your program ***")
 
-    for page in range(len(mem)):
-        for word in range(len(mem[0])):
+    for page in range(pages): # for each page in memory
+        for word in range(words): # for each word in that page
 
-            # Block takes input and checks input validity
+            # loop takes input and checks input validity
             valid = False
             while not valid:
                 entry = input(f"{page:02d}{word:02d} ? ") # Get input from user
@@ -106,24 +112,16 @@ def manual_data_entry():
                 # Check exit
                 if entry.upper() == "GO":
                     return 0
-                
-                # If entry is an instruction with a negative operand, it's valid
-                if re.match(r"^\d\d-\d(\d?){3}$", entry): break
-                
-                # Check valid input - must be a 6 digit number or fewer
-                if not re.match(r"^-?\d+$", entry): # If entry isn't an integer value, try again
-                    print("Input must be a number or \"GO\"")
-                    continue
-                
-                # ensures input is 6 or fewer digits
+
+                # ensure input is valid
                 if not re.fullmatch(r"^-?\d(\d?){5}$", entry):
-                    print("Entry must be 6 digits or fewer")
+                    print("Entry must be a 6 or fewer digit integer or \"GO\"")
                     continue
 
                 valid = True
                 
             # Input is valid, enter to memory
-            mem[page][word] = entry          
+            mem[page * 100 + word] = int(entry)          
     return 0 # Reached end of memory
 
 # !!! File must have 4 digit line numbers at the start of each line !!!
@@ -142,11 +140,10 @@ def file_data_entry(file_name):
                 # For some reason the length of an empty line was coming out as 1
 
                 # Check if entry matches the correct line format of SML
-                match = re.match(r"^\d{4}((-?\d(\d?){5})|(\d\d-\d(\d?){3}))(;(.+)?)?$", entry) # have fun with that regex
+                match = re.match(r"^\d{4}-?\d(\d?){5}(;(.+)?)?$", entry)
                 # Accepted format:
-                # Must have 4 digits (memory location) followed by either:
+                # Must have 4 digits (memory location) followed by
                 # a 1-6 digit value which can be negative
-                # or a 2 digit number (instruction code) followed by a 1-4 digit number that can be negative
                 # then optionally followed by a comment denoted by a ;
                 # Whitespace does not matter
                 if not match:
@@ -155,10 +152,9 @@ def file_data_entry(file_name):
 
                 # Split data
                 entry = entry.split(';')[0] # Remove the comment if there is one
-                page = entry[0:2] # First 2 digits are page
-                word = entry[2:4] # digits 3 and 4 are word
+                address = int(entry[0:4]) # First 4 digits are address
                 entry = entry[4:] # Actual data is the rest
-                mem[int(page)][int(word)] = entry
+                mem[address] = int(entry)
 
     except FileNotFoundError:
         print("The file does not exist")
@@ -169,19 +165,23 @@ def file_data_entry(file_name):
 def execute_ir():
 
     global mem
-    
-    op_code = abs(ir/10000) # op code is first 2 digits
-    operand = ir%10000
+
+    # since instructions may have no operand, it could be less than 6 digits, 
+    # so for instruction execution we fill the op code and operand with zeroes on the right
+    padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
+
+    op_code = abs(padded//10000) # op code is first 2 digits
+    operand = padded%10000
 
     global instr
 
     if isinstance(instr[op_code], int): # if instr[op_code] doesn't map to an instruction function
         print("Illegal instruction: Terminating")
-        return 1 # Invalid operation code
+        return 2 # Invalid operation code
 
     exit_code = instr[op_code](operand)
     # if a string is returned, then an error has occured
     if isinstance(exit_code, str):
         print(exit_code)
-        return 1 # signifies error in order to terminate
+        return 2 # signifies error in order to terminate
     return exit_code
