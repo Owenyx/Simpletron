@@ -6,14 +6,13 @@ import instructions
 # create memory, 100 pages of 100 words each, 10,000 words total
 pages, words = 100, 100
 
-mem = [["0"] * words for _ in range(pages)] 
-# Memory has to be strings for annoying reasons
-# The strings will all contain integers or 2 digits followed by an integer
+# Actual memory is not divided internally
+mem = [0] * (pages * words)
 
 # Create registers
 acc = 0 # accumulator
 ic = 0 # instruction counter
-ir = '0' # instruction register, has to be a string as it will contain instructions which can have 2 digits followd by a negative
+ir = 0 # instruction register
 idx = 0 # index register
 
 # List of functions of all the instructions - Size of list = highest op_code + 1
@@ -53,8 +52,8 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
     global ir
     global idx
 
-    oc = int(ir[0:2]) # Set the operation code to the left 2 digits of the instruction register
-    op = int(ir.zfill(6)[2:6]) # set the operand to the right 4 digits of the instruction register
+    opcode = abs(ir/10000) # Set the operation code to the left 2 digits of the instruction register
+    opr = ir%10000 # set the operand to the right 4 digits of the instruction register
 
     # Dump registers and page data for each page within the range
     for page_num in range(start, end+1):
@@ -63,16 +62,18 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
 
         # Dump registers
         print("\nREGISTERS:\n")
-        print(f"Accumulator        {acc:06d}")
-        print(f"InstructionCounter {ic:06d}")
-        print(f"IndexRegister      {idx:06d}")
-        print(f"OperationCode          {oc:02d}")
-        print(f"Operand              {op:04d}")
+        print(f"Accumulator        {acc:0{7 if acc < 0 else 6}d}") # format is to sure length of output is 6 even when number is negative
+        print(f"InstructionCounter {ic:0{7 if acc < 0 else 6}d}")
+        print(f"IndexRegister      {idx:0{7 if acc < 0 else 6}d}")
+        print(f"OperationCode          {opcode:0{3 if acc < 0 else 2}d}")
+        print(f"Operand              {opr:0{5 if acc < 0 else 4}d}")
 
         # Dump memory one page at a time
         print("\nMEMORY",end="\n\n   ")
+
+        # print ones index on top for page
         for i in range(10):
-            print(f"{i:6d} ",end="") # print ones index on top for page
+            print(f"{i:6d} ",end="") 
         print()
 
         # Dump the words of the page
@@ -80,7 +81,8 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
             print(f"{(line*10):02d}",end="") # Print the tens index
             # Dump the words on this line
             for i in range(10):
-                print(f" {mem[page_num][10*line + i].zfill(6)}",end="") # Print the word at the current page and current line and index
+                # Print the word at the current page and current line and index
+                print(f" {mem[page_num*100 + 10*line + i]:0{7 if acc < 0 else 6}d}",end="") 
             print()
         print("\n")
     return 0
@@ -168,15 +170,12 @@ def execute_ir():
 
     global mem
     
-    op_code = int(ir[0:2]) # op code is first 2 digits
-    # if operand is negative, then the 3rd character of ir will be the - sign and the other 4 will be the operand value
-    if len(ir) > 2 and ir[2] == '-': operand = '-' + ir[3:7].zfill(4)
-    # otherwise, the 4 digits after the op code will be the operand
-    else: operand = ir[2:6].zfill(4) # operand is digits 3-6
+    op_code = abs(ir/10000) # op code is first 2 digits
+    operand = ir%10000
 
     global instr
 
-    if isinstance(instr[op_code], int):
+    if isinstance(instr[op_code], int): # if instr[op_code] doesn't map to an instruction function
         print("Illegal instruction: Terminating")
         return 1 # Invalid operation code
 
