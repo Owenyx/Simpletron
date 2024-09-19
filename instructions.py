@@ -18,7 +18,7 @@ def READ(op):
     # check input validity
     while not re.match(r"^-?\d(\d?){5}$", inp): # if input is not as 6 or fewer digit integer, terminate with an error
         print("Invalid entry, try again")
-        inp = input(f"{op} ? ")
+        inp = input(f"? ")
 
     machine.mem[op] = int(inp)
     return 0
@@ -71,13 +71,13 @@ def ADDX(op):
 
 def SUBTRACT(op):
     if op<0: return "Error: Out of memory bounds" 
-    if acc_overflow(op): return "Error: Accumulator overflow"
+    if acc_underflow(op): return "Error: Accumulator overflow"
     machine.acc -= machine.mem[op]
     return 0
 
 def SUBTRACTX(op):
     if machine.idx < 0 or machine.idx > 9999: return "Error: Out of memory bounds" 
-    if acc_overflow(machine.idx): return "Error: Accumulator overflow"
+    if acc_underflow(machine.idx): return "Error: Accumulator overflow"
     machine.acc -= machine.mem[machine.idx]
     return 0
 
@@ -152,5 +152,12 @@ def HALT(op):
 def acc_overflow(address):
     sum = machine.mem[address] + machine.acc 
     if sum > 999999 or sum < -999999:
+        return True
+    return False
+
+# will still be reported as an overflow
+def acc_underflow(address):
+    diff = machine.acc - machine.mem[address]
+    if diff > 999999 or diff < -999999:
         return True
     return False

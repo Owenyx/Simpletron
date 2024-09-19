@@ -54,7 +54,10 @@ def dump_core(start, end): # Param are start and end of the range of pages to pr
 
     # since instructions may have no operand, it could be less than 6 digits, 
     # so for instruction execution we fill the op code and operand with zeroes on the right
-    padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
+    if ir < 0: # handle extra - sign at start
+        padded = int('-' + str(ir)[1:3].zfill(2) + str(ir)[3:7].zfill(4))
+    else:
+        padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
 
     op_code = abs(padded//10000) # op code is first 2 digits
     operand = padded%10000 # operand is the other 4
@@ -130,14 +133,21 @@ def file_data_entry(file_name):
 
     global mem
 
+    star_address = "0000"
+    # Star is used for incremental addresses, starting at 0000 or from the previous specified address
+
     try:
         with open(file_name, 'r') as file:
             # Process SML line by line
             for line in file:
                 entry = ''.join(line.split()) # Remove all whitespace from data entry for easier processing
 
-                if len(line) == 0 or len(line) == 1 or line[0] == ";": continue # If line is empty or just a comment, move on
+                if len(entry) == 0 or entry[0] == ";": continue # If line is empty or just a comment, move on
                 # For some reason the length of an empty line was coming out as 1
+
+                # Star check:
+                if entry[0] == "*":
+                    entry = star_address + entry[1:] # replaces the star with the star address 
 
                 # Check if entry matches the correct line format of SML
                 match = re.match(r"^\d{4}-?\d(\d?){5}(;(.+)?)?$", entry)
@@ -155,6 +165,7 @@ def file_data_entry(file_name):
                 address = int(entry[0:4]) # First 4 digits are address
                 entry = entry[4:] # Actual data is the rest
                 mem[address] = int(entry)
+                star_address = str(address + 1).zfill(4)
 
     except FileNotFoundError:
         print("The file does not exist")
@@ -165,10 +176,14 @@ def file_data_entry(file_name):
 def execute_ir():
 
     global mem
+    global ir
 
     # since instructions may have no operand, it could be less than 6 digits, 
     # so for instruction execution we fill the op code and operand with zeroes on the right
-    padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
+    if ir < 0: # handle extra - sign at start
+        padded = int('-' + str(ir)[1:3].zfill(2) + str(ir)[3:7].zfill(4))
+    else:
+        padded = int(str(ir)[0:2].zfill(2) + str(ir)[2:6].zfill(4))
 
     op_code = abs(padded//10000) # op code is first 2 digits
     operand = padded%10000
