@@ -29,7 +29,7 @@ def main():
         if exit_code == 1: # program halted
             break
         if exit_code == 2: # program encountered an error
-            machine.dump_core(00,00) # dump first 10 pages
+            machine.dump_core(00,10) # dump first 10 pages
             break
     return 0
         
