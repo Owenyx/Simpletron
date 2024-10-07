@@ -6,9 +6,8 @@ import machine
 # Operands will always be an integer of 4 digits or fewer, possibly negative
 
 # Errors invloving out of memory bounds, divide by zero, invalid operands, and accumulator overflow are covered
-# Another error covered is if an instruction tries to convert an instruction with a negative operand to
-# an int, which will not convert properly - this error is "Error: Data at memory location must be an integer value"
 
+# Read a 6 or fewer integer from user input
 def READ(op):
 
     if op<0: return "Error: Out of memory bounds" # operand tries to access out of memory bounds
